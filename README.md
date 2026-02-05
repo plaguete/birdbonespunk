@@ -138,4 +138,4 @@ Aos fãs que deixam recados e apoiam a banda! 🤘
 
 ---
 
-**BIRD BONES** - PRIMEIRA BANDA DO MUNDO // EST. 2025
+**BIRD BONES** - PRIMEIRA BANDA DO MUNDO // EST. 2025# birdbonespunk
