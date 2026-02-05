@@ -103,6 +103,56 @@ Para tornar os dados permanentes, você precisaria:
 2. **Atualizar a API** para usar o banco de dados ao invés da memória
 3. **Configurar variáveis de ambiente** para credenciais do banco
 
+## 🗄️ Configurar Vercel Postgres (banco de dados) e variáveis de ambiente
+
+Se você quer que os recados fiquem salvos permanentemente, use o Vercel Postgres e configure a variável de ambiente `DATABASE_URL` no projeto do Vercel.
+
+Passos rápidos:
+
+1. No dashboard do Vercel, abra o projeto e vá em **Add > Vercel Postgres** (ou procure por "Postgres" na seção de Add-ons). Crie uma instância gratuita ou escolha o plano desejado.
+2. Após criada, copie a *Connection String* (ela tem o formato `postgres://USER:PASS@HOST:PORT/DATABASE`).
+3. No projeto Vercel, abra **Settings → Environment Variables** e adicione uma variável chamada `DATABASE_URL` com o valor da Connection String.
+4. Re-deploy do projeto (ou faça novo deploy via Git). O Vercel injeta `DATABASE_URL` nas serverless functions automaticamente.
+
+Observação: a API em `/api/comments` já foi atualizada para usar `DATABASE_URL` (conexão via `pg`) e cria a tabela `comments` automaticamente na primeira chamada.
+
+## 🧪 Testes locais (com `DATABASE_URL` de teste)
+
+Se você quiser que eu rode testes locais aqui, forneça uma `DATABASE_URL` de teste (uma string de conexão para um Postgres acessível). Caso prefira testar localmente, siga estes passos:
+
+1. Exporte a variável `DATABASE_URL` no seu terminal (macOS/Linux):
+
+```bash
+export DATABASE_URL="postgres://USER:PASSWORD@HOST:PORT/DATABASE"
+```
+
+2. Inicie o desenvolvimento local com o Vercel CLI (recomendado):
+
+```bash
+npm i -g vercel
+vercel dev
+```
+
+3. Em outro terminal, rode os testes via `curl`:
+
+```bash
+# Listar recados
+curl http://localhost:3000/api/comments
+
+# Criar recado
+curl -X POST http://localhost:3000/api/comments \
+   -H "Content-Type: application/json" \
+   -d '{"name":"Teste","message":"Olá do ambiente local"}'
+
+# Deletar recado (exemplo id=1)
+curl -X DELETE http://localhost:3000/api/comments \
+   -H "Content-Type: application/json" \
+   -d '{"id":1}'
+```
+
+Se você me fornecer a `DATABASE_URL` aqui (como mensagem), eu posso executar os mesmos testes dentro deste ambiente e confirmar que GET/POST/DELETE funcionam.
+
+
 ## 🎨 Design
 
 O site tem um design "bulletin board" (quadro de recados) com:
