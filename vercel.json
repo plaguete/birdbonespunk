@@ -13,17 +13,12 @@
       "dest": "/api/comments.js"
     },
     {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
       "src": "/(.*\\.(?:jpg|jpeg|png|gif|svg|css|js|woff|woff2|eot|ttf|webmanifest))",
       "dest": "/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "/index.html",
-      "status": 200
+      "dest": "/api/index.js"
     }
   ]
 }
