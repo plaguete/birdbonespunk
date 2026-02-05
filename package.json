@@ -1,0 +1,23 @@
+{
+  "name": "bird-bones-website",
+  "version": "1.0.0",
+  "description": "Website oficial da banda Bird Bones",
+  "main": "index.html",
+  "scripts": {
+    "dev": "echo 'Development server not needed for static site'",
+    "build": "echo 'No build process needed for static site'",
+    "start": "echo 'Use a local server to serve the static files'"
+  },
+  "keywords": [
+    "bird",
+    "bones",
+    "band",
+    "punk",
+    "music"
+  ],
+  "author": "Bird Bones",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

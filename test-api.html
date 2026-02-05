@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste API de Recados - Bird Bones</title>
+    <style>
+        body {
+            font-family: 'Special Elite', monospace;
+            background: #1a1a1a;
+            color: #000;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .container {
+            background: #f4f4f4;
+            padding: 20px;
+            border: 2px solid #000;
+            box-shadow: 4px 4px 0 #000;
+        }
+        h1 { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #fff;
+            border: 1px dashed #000;
+        }
+        button {
+            background: #000;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-family: 'Permanent Marker';
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #333; }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #eee;
+            border: 1px solid #ccc;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            font-family: 'Special Elite';
+            border: 1px solid #000;
+        }
+        .status-ok { color: #008000; font-weight: bold; }
+        .status-error { color: #8b0000; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste API de Recados</h1>
+        
+        <div class="test-section">
+            <h3>1. Listar Comentários</h3>
+            <button onclick="listComments()">GET /api/comments</button>
+            <div id="list-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Adicionar Comentário</h3>
+            <input type="text" id="test-name" placeholder="Seu nome" value="Teste Usuário">
+            <textarea id="test-msg" placeholder="Sua mensagem">Esta é uma mensagem de teste para a API!</textarea>
+            <button onclick="addComment()">POST /api/comments</button>
+            <div id="add-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Teste de Validação</h3>
+            <button onclick="testValidation()">Testar validação (nome curto)</button>
+            <button onclick="testEmpty()">Testar campos vazios</button>
+            <div id="validation-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Teste Completo</h3>
+            <button onclick="runFullTest()">Executar teste completo</button>
+            <div id="full-test-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api/comments';
+
+        async function listComments() {
+            const resultDiv = document.getElementById('list-result');
+            resultDiv.innerHTML = 'Carregando...';
+            
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `✅ Sucesso!\nStatus: ${response.status}\n\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.innerHTML = `❌ Erro!\nStatus: ${response.status}\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ Erro de conexão:\n${error.message}`;
+            }
+        }
+
+        async function addComment() {
+            const name = document.getElementById('test-name').value;
+            const msg = document.getElementById('test-msg').value;
+            const resultDiv = document.getElementById('add-result');
+            
+            resultDiv.innerHTML = 'Enviando...';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, message: msg })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `✅ Comentário adicionado!\nStatus: ${response.status}\n\n${JSON.stringify(data, null, 2)}`;
+                    // Atualiza a lista
+                    setTimeout(listComments, 500);
+                } else {
+                    resultDiv.innerHTML = `❌ Erro ao adicionar!\nStatus: ${response.status}\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ Erro de conexão:\n${error.message}`;
+            }
+        }
+
+        async function testValidation() {
+            const resultDiv = document.getElementById('validation-result');
+            resultDiv.innerHTML = 'Testando validação...';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name: 'A', message: 'Teste' })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    resultDiv.innerHTML = `✅ Validação funcionando!\nStatus: ${response.status}\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.innerHTML = `❌ Validação não funcionou como esperado!\nStatus: ${response.status}`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ Erro de conexão:\n${error.message}`;
+            }
+        }
+
+        async function testEmpty() {
+            const resultDiv = document.getElementById('validation-result');
+            resultDiv.innerHTML = 'Testando campos vazios...';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name: '', message: '' })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    resultDiv.innerHTML = `✅ Validação de campos vazios funcionando!\nStatus: ${response.status}\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.innerHTML = `❌ Validação não funcionou como esperado!\nStatus: ${response.status}`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ Erro de conexão:\n${error.message}`;
+            }
+        }
+
+        async function runFullTest() {
+            const resultDiv = document.getElementById('full-test-result');
+            resultDiv.innerHTML = 'Executando teste completo...';
+            
+            let success = true;
+            let results = [];
+            
+            try {
+                // Teste 1: Listar comentários
+                results.push('1. Testando listagem de comentários...');
+                const listResponse = await fetch(API_URL);
+                const listData = await listResponse.json();
+                results.push(`   Status: ${listResponse.status} - ${listResponse.ok ? 'OK' : 'FALHOU'}`);
+                
+                // Teste 2: Adicionar comentário
+                results.push('2. Testando adição de comentário...');
+                const addResponse = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        name: 'Teste Completo', 
+                        message: 'Esta é uma mensagem de teste completa!' 
+                    })
+                });
+                const addData = await addResponse.json();
+                results.push(`   Status: ${addResponse.status} - ${addResponse.ok ? 'OK' : 'FALHOU'}`);
+                
+                // Teste 3: Validar erro
+                results.push('3. Testando validação de erro...');
+                const errorResponse = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: 'A', message: 'Teste' })
+                });
+                const errorData = await errorResponse.json();
+                results.push(`   Status: ${errorResponse.status} - ${!errorResponse.ok ? 'VALIDAÇÃO FUNCIONANDO' : 'VALIDAÇÃO FALHOU'}`);
+                
+                // Resumo
+                results.push('\n=== RESUMO DO TESTE ===');
+                results.push(`Listagem: ${listResponse.ok ? '✅' : '❌'}`);
+                results.push(`Adição: ${addResponse.ok ? '✅' : '❌'}`);
+                results.push(`Validação: ${!errorResponse.ok ? '✅' : '❌'}`);
+                
+                const allPassed = listResponse.ok && addResponse.ok && !errorResponse.ok;
+                results.push(`\nResultado geral: ${allPassed ? '🎉 TODOS OS TESTES PASSARAM!' : '❌ ALGUNS TESTES FALHARAM'}`);
+                
+                resultDiv.innerHTML = results.join('\n');
+                
+            } catch (error) {
+                resultDiv.innerHTML = `❌ Erro durante o teste completo:\n${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIRD BONES † </title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Rock+Salt&family=Permanent+Marker&family=VT323&display=swap');
+
+        /* --- TELA DE LOADING --- */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #000; z-index: 99999; display: flex;
+            justify-content: center; align-items: center;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
+        }
+        #loader.hidden { opacity: 0; visibility: hidden; }
+        #loader img {
+            max-width: 300px; width: 80%; height: auto;
+            animation: pulse-trash 0.5s infinite alternate;
+        }
+        @keyframes pulse-trash {
+            from { transform: scale(1) rotate(-2deg); filter: contrast(100%); }
+            to { transform: scale(1.1) rotate(2deg); filter: contrast(150%); }
+        }
+
+        /* --- LIGHTBOX --- */
+        #lightbox {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 10000; display: none;
+            justify-content: center; align-items: center; cursor: zoom-out;
+            backdrop-filter: blur(5px);
+        }
+        #lightbox.active { display: flex; animation: fadeIn 0.3s; }
+
+        .big-polaroid {
+            background: #fff; padding: 20px 20px 70px 20px;
+            box-shadow: 0 0 50px rgba(0,0,0,1); max-width: 90%; max-height: 90vh;
+            transform: rotate(-1deg); position: relative; text-align: center; cursor: default;
+        }
+        .big-polaroid img {
+            max-width: 100%; max-height: 75vh; border: 1px solid #ccc;
+            object-fit: contain; display: block;
+        }
+        .big-polaroid span {
+            font-family: 'Permanent Marker', cursive; font-size: 2.5rem; color: #000;
+            display: block; margin-top: 15px; line-height: 1;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        /* --- GERAIS --- */
+        * { box-sizing: border-box; cursor: default; }
+        body {
+            background-color: #1a1a1a;
+            background-image: url('https://www.transparenttextures.com/patterns/dark-wall.png');
+            color: #000; font-family: 'Special Elite', monospace; margin: 0; min-height: 100vh;
+            display: flex; justify-content: center; align-items: flex-start;
+            padding-top: 20px; padding-bottom: 50px; overflow-x: hidden;
+        }
+        a { color: #8b0000; text-decoration: none; font-weight: bold; }
+        a:hover { text-decoration: underline; }
+
+        .bulletin-board {
+            max-width: 1050px; width: 95%;
+            background-color: #d2b48c; background-image: url('corkboard.jpeg');
+            border: 25px solid #5c4033; border-image-source: url('wood.jpeg');
+            border-image-repeat: round; border-image-slice: 30; border-radius: 2px;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.6), 0 20px 50px rgba(0,0,0,0.8);
+            position: relative; padding: 40px; min-height: 900px;
+        }
+
+        header {
+            background: #fdfdfd; background-image: url('textura-de-papel-branco_1194-2301.jpg');
+            padding: 20px; text-align: center; transform: rotate(-1deg);
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.3); margin-bottom: 40px;
+            position: relative; border: 1px solid #ccc;
+        }
+        .title-wrapper { display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap; }
+        h1 {
+            font-family: 'Rock Salt', cursive; font-size: 3.5rem; color: #000;
+            margin: 10px 0; line-height: 1; text-transform: uppercase;
+            letter-spacing: -2px; position: relative; z-index: 5;
+        }
+        .tape-center {
+            position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+            width: 180px; height: 40px; background: rgba(255, 255, 255, 0.6);
+            border-left: 1px dashed rgba(0,0,0,0.2); border-right: 1px dashed rgba(0,0,0,0.2);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 10;
+        }
+
+        nav { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 40px; }
+        .nav-btn {
+            background: #ffeb3b; color: #000; padding: 10px 15px;
+            font-size: 1.1rem; cursor: pointer; font-family: 'Permanent Marker', cursive;
+            transform: rotate(var(--rot)); transition: 0.2s;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3); border-bottom-right-radius: 20px 5px;
+            text-align: center; width: 130px;
+        }
+        .nav-btn:hover, .nav-btn.active {
+            transform: scale(1.1) rotate(0deg); z-index: 100;
+            box-shadow: 5px 5px 10px rgba(0,0,0,0.4);
+        }
+
+        .paper-sheet {
+            background: #f4f4f4; background-image: url('textura-de-papel-branco_1194-2301.jpg');
+            padding: 25px; position: relative; box-shadow: 4px 4px 15px rgba(0,0,0,0.4);
+            margin-bottom: 30px; border: 1px solid #bbb;
+        }
+        .lined-paper {
+            background-image: repeating-linear-gradient(transparent, transparent 29px, #add8e6 30px);
+            background-color: #fff; line-height: 30px;
+        }
+        .pin {
+            width: 16px; height: 16px; border-radius: 50%; position: absolute;
+            z-index: 20; box-shadow: 2px 2px 3px rgba(0,0,0,0.5);
+        }
+        .pin.red { background: radial-gradient(circle at 30% 30%, #ff4444, #990000); }
+        .pin.blue { background: radial-gradient(circle at 30% 30%, #4444ff, #000099); }
+        .pin.metal { background: radial-gradient(circle at 30% 30%, #e0e0e0, #777); }
+        .pin-tl { top: 10px; left: 10px; }
+        .pin-tc { top: 10px; left: 50%; transform: translateX(-50%); }
+
+        .page-section { display: none; animation: popIn 0.3s; }
+        .page-section.active { display: block; }
+        @keyframes popIn { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .polaroid-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 20px; }
+        .polaroid {
+            background: #fff; padding: 12px 12px 40px 12px;
+            box-shadow: 4px 4px 6px rgba(0,0,0,0.4); transform: rotate(var(--rot));
+            text-align: center; width: 160px; position: relative;
+        }
+        .polaroid img { width: 100%; height: 140px; object-fit: cover; filter: grayscale(100%) contrast(120%); border: 1px solid #ccc; }
+        .polaroid span { font-family: 'Permanent Marker'; font-size: 1.2rem; display: block; margin-top: 15px; color: #000; line-height: 1; }
+        .polaroid small { font-family: 'VT323'; font-size: 1.1rem; color: #555; display: block; margin-top: 5px; }
+
+        /* --- GALERIA --- */
+        .folders-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; padding: 40px 20px; }
+        .folder-item {
+            width: 220px; height: 160px; background: #c2a27d; position: relative;
+            border-radius: 4px; box-shadow: 5px 5px 15px rgba(0,0,0,0.5); cursor: pointer;
+            transition: transform 0.2s, background 0.2s; border: 1px solid #8f7457;
+        }
+        .folder-item::before {
+            content: ''; position: absolute; top: -20px; left: 0; width: 90px; height: 25px;
+            background: #c2a27d; border-radius: 6px 15px 0 0;
+            border-top: 1px solid #8f7457; border-left: 1px solid #8f7457; border-right: 1px solid #8f7457;
+        }
+        .folder-item:hover { transform: scale(1.05) rotate(-2deg); background: #d4b48f; }
+        .folder-item:hover::before { background: #d4b48f; }
+        .folder-label {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-family: 'Permanent Marker'; font-size: 1.5rem; text-align: center;
+            color: #2b1d0e; width: 90%; text-shadow: 1px 1px 0px rgba(255,255,255,0.2);
+        }
+
+        .scatter-area {
+            position: relative;
+            width: 100%;
+            margin: 20px auto 0 auto;
+            display: none;
+            /* overflow-y: visible garantido para não cortar rotações */
+            overflow: visible; 
+            padding-top: 80px;
+            padding-bottom: 100px; /* Folga embaixo para não encostar na borda */
+        }
+        .scatter-area.visible { display: block; }
+        
+        #scatter-floor { 
+            position: relative; 
+            width: 100%; 
+            min-height: 500px;
+            /* Permite que o conteúdo cresça além do container se necessário */
+        }
+
+        .scatter-photo {
+            position: absolute;
+            width: 200px; 
+            padding: 10px 10px 45px 10px;
+            background: #fff;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.6);
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease-out, transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), left 0.4s ease, top 0.4s ease;
+            z-index: 10;
+            /* Mantém a polaroide inteira mesmo se inclinada */
+            backface-visibility: hidden;
+        }
+
+        .scatter-photo.landed {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .scatter-photo:hover {
+            z-index: 1000 !important;
+            transform: translate(-50%, -50%) scale(1.1) rotate(0deg) !important;
+        }
+
+        .scatter-photo img {
+            width: 100%; height: 170px; object-fit: cover;
+            filter: grayscale(100%) contrast(120%);
+            border: 1px solid #ccc; pointer-events: none;
+        }
+        .scatter-photo span {
+            font-family: 'Permanent Marker'; font-size: 1.3rem;
+            display: block; color: #000; line-height: 1; margin-top: 10px; text-align: center;
+        }
+
+        .back-btn-container {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1500;
+        }
+
+        .back-btn {
+            background: #8b0000; color: #fff; border: 2px solid #fff; padding: 8px 20px;
+            font-family: 'VT323'; font-size: 1.4rem; cursor: pointer;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
+            transition: 0.2s;
+        }
+        .back-btn:hover { background: #ff0000; transform: translateY(-2px); }
+
+        /* --- MÚSICA & STREAMING --- */
+        .streaming-links {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: rgba(0,0,0,0.05);
+            border: 2px dashed #000;
+        }
+        .stream-icon svg {
+            width: 45px;
+            height: 45px;
+            fill: #000;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .stream-icon:hover svg {
+            transform: scale(1.2) rotate(-5deg);
+        }
+
+        /* --- MERCH STYLE --- */
+        .merch-coming-soon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 50px 20px;
+            text-align: center;
+        }
+        .merch-coming-soon h2 {
+            font-family: 'Rock Salt', cursive;
+            font-size: 4rem;
+            color: #ff0000;
+            text-shadow: 3px 3px 0 #000;
+            margin-bottom: 20px;
+            transform: rotate(-2deg);
+        }
+        .merch-gif {
+            max-width: 100%;
+            border: 5px solid #000;
+            box-shadow: 10px 10px 0 rgba(0,0,0,0.2);
+            margin: 20px 0;
+        }
+
+        /* --- GRID E PERFIL --- */
+        h2 { font-family: 'Permanent Marker'; font-size: 2rem; color: #000; display: inline-block; margin-top: 0; }
+        .grid-layout { display: grid; grid-template-columns: 300px 1fr; gap: 30px; }
+        .sidebar-profile { display: flex; flex-direction: column; gap: 20px; }
+        .profile-pic-container {
+            background: #fff; padding: 10px 10px 40px 10px;
+            box-shadow: 3px 3px 8px rgba(0,0,0,0.3); transform: rotate(-2deg);
+        }
+        .profile-pic-container img { width: 100%; border: 1px solid #000; }
+        .social-row { display: flex; justify-content: center; gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 2px dashed #999; }
+        .social-icon svg { width: 32px; height: 32px; fill: #000; }
+        .social-icon:hover { transform: scale(1.2) rotate(-5deg); }
+
+        footer { text-align: center; margin-top: 50px; font-family: 'VT323'; font-size: 1.2rem; padding: 10px; }
+
+        /* --- RESPONSIVIDADE --- */
+        @media (max-width: 800px) {
+            .grid-layout { grid-template-columns: 1fr; }
+            .bulletin-board { padding: 15px; border-width: 15px; } 
+            h1 { font-size: 2.5rem; }
+            .sidebar-profile { flex-direction: row; flex-wrap: wrap; justify-content: center;}
+            .profile-pic-container { width: 180px; }
+            .merch-coming-soon h2 { font-size: 2.5rem; }
+            
+            .scatter-photo { 
+                width: 150px; 
+                padding: 8px 8px 35px 8px; 
+            }
+            .scatter-photo img { 
+                height: 120px; 
+            }
+            .scatter-photo span { 
+                font-size: 1rem; 
+                margin-top: 5px;
+            }
+        }
+        @media (max-width: 500px) {
+            .nav-btn { width: 45%; font-size: 1rem; }
+            .stream-icon svg { width: 35px; height: 35px; }
+            .scatter-photo { width: 130px; }
+            .scatter-photo img { height: 100px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <img src="jackass.png" alt="Carregando..." />
+    </div>
+
+    <div id="lightbox" onclick="closeLightbox()">
+        <div class="big-polaroid" onclick="event.stopPropagation()">
+            <img id="lb-img" src="" alt="Zoom Foto">
+            <span id="lb-caption"></span>
+        </div>
+    </div>
+
+    <div class="bulletin-board">
+        
+        <header>
+            <div class="tape-center"></div>
+            <div class="title-wrapper">
+                <h1>BIRD BONES</h1>
+            </div>
+            <p style="font-family: 'VT323'; font-size: 1.5rem; background: #000; color: #fff; display: inline-block; padding: 0 10px;">PRIMEIRA BANDA DO MUNDO // EST. 2025</p>
+        </header>
+
+        <nav>
+            <div class="nav-btn active" onclick="showPage('home')" style="--rot: -2deg;">INÍCIO</div>
+            <div class="nav-btn" onclick="showPage('news')" style="--rot: 2deg;">NOTÍCIAS</div>
+            <div class="nav-btn" onclick="showPage('music')" style="--rot: -1deg;">MÚSICA</div>
+            <div class="nav-btn" onclick="showPage('gallery')" style="--rot: 3deg;">FOTOS</div>
+            <div class="nav-btn" onclick="showPage('merch')" style="--rot: -2deg;">LOJA</div>
+            <div class="nav-btn" onclick="showPage('guestbook')" style="--rot: 1deg;">RECADOS</div>
+        </nav>
+
+        <div id="page-home" class="page-section active">
+            <div class="grid-layout">
+                <aside class="sidebar-profile">
+                    <div class="profile-pic-container">
+                        <div class="pin pin-tc red"></div>
+                        <img src="fotodabanda.jpeg" alt="Banda">
+                    </div>
+                    
+                    <div class="paper-sheet" style="transform: rotate(1deg);">
+                        <div class="pin pin-tl metal"></div>
+                        <h3 style="margin-top:0; border-bottom: 2px dashed #000;">INFO</h3>
+                        <ul style="list-style: none; padding: 0; font-size: 0.9rem; line-height: 1.6;">
+                            <li><strong>Local:</strong> Itapetininga, SP</li>
+                            <li><strong>Gênero:</strong> Punk</li>
+                            <li><strong>Humor:</strong> Péssimo</li>
+                            <li><strong>Status:</strong> Falidos</li>
+                        </ul>
+                        <div class="social-row">
+                            <a href="#" class="social-icon insta"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.5 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.9 0-184.9zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"/></svg></a>
+                            <a href="#" class="social-icon spotify"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M248 8C111.1 8 0 119.1 0 256s111.1 248 248 248 248-111.1 248-248S384.9 8 248 8zm113.3 350.7c-4.4 7.3-14 9.6-21.2 5.1-58.4-35.6-131.9-43.6-218.4-23.9-8.3 1.9-16.7-3.4-18.6-11.6-1.9-8.2 3.4-16.6 11.6-18.6 94.6-21.6 174.9-12.2 241.5 28.3 7.3 4.5 9.6 14 5.1 21.2zm11.7-52.4c-5.5 8.9-17.1 11.7-26.1 6.1-65.4-40.2-164.8-51.8-241.9-28.3-9.9 3-20.5-2.6-23.5-12.5-3-9.9 2.6-20.5 12.5-23.5 87.8-26.7 197.6-13 273 33.3 9 5.5 11.7 17.1 6.1 26.1zm1.2-54.2c-78.5-46.6-208.2-50.9-283.2-28.1-11.4 3.5-23.6-3-27.1-14.4-3.5-11.4 3-23.6 14.4-27.1 84.7-25.7 226.7-20.7 315.8 32.2 10.3 6.1 13.6 19.4 7.5 29.7-6.1 10.3-19.4 13.6-29.7 7.5z"/></svg></a>
+                        </div>
+                    </div>
+                </aside>
+
+                <main>
+                    <div class="paper-sheet" style="transform: rotate(-0.5deg);">
+                        <div class="pin pin-tl blue"></div>
+                        <h2 style="border-bottom: 3px solid #000;">SOBRE NÓS</h2>
+                        <p>Nós somos o <strong>BIRD BONES</strong>. Fazemos barulho porque é mais barato que terapia.</p>
+                        <p>Se você gosta de música boa tocada por gente estranha, seu lugar é aqui.</p>
+                    </div>
+                    <div style="margin-top: 40px; text-align: center;">
+                        <h2 style="transform: rotate(2deg); background: #f00; color: #fff; padding: 5px 20px; border: 2px solid #fff; box-shadow: 4px 4px 0 rgba(0,0,0,0.5);">OS CRIMINOSOS</h2>
+                        <div class="polaroid-container">
+                            <div class="polaroid" style="--rot: 3deg;">
+                                <img src="maria.jpeg">
+                                <span>MARI JOANA</span>
+                                <small>VOCAL</small>
+                            </div>
+                            <div class="polaroid" style="--rot: -2deg;">
+                                <img src="mako.jpeg">
+                                <span>MAKO</span>
+                                <small>GUITARRA</small>
+                            </div>
+                            <div class="polaroid" style="--rot: 1deg;">
+                                <img src="risa.jpeg">
+                                <span>RISA</span>
+                                <small>BATERIA</small>
+                            </div>
+                            <div class="polaroid" style="--rot: -3deg;">
+                                <img src="luck.jpeg">
+                                <span>LUCK</span>
+                                <small>BAIXO</small>
+                            </div>
+                            <div class="polaroid" style="--rot: 2deg;">
+                                <img src="matty.jpeg">
+                                <span>MATTY</span>
+                                <small>GUITARRA</small>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <div id="page-news" class="page-section">
+            <div class="paper-sheet lined-paper" style="max-width: 800px; margin: 0 auto; min-height: 500px;">
+                <div class="pin pin-tc red"></div>
+                <h2 style="text-align: center; display: block; border: none; text-decoration: underline;">ÚLTIMAS NOTÍCIAS</h2>
+                <div style="margin-bottom: 30px;">
+                    <span style="background: #000; color: #fff; padding: 2px 8px; font-family: 'VT323'; font-size: 1.2rem;">17/01/2026</span>
+                    <h3 style="margin: 5px 0;">O COMEÇO DO FIM: "PRIMEIRA BANDA DO MUNDO"</h3>
+                    <p>BIRD BONES anuncia oficialmente seu álbum de estreia.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-music" class="page-section">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+                <div class="paper-sheet" style="width: 100%; max-width: 600px; transform: rotate(-1deg); text-align: center;">
+                    <div class="pin pin-tc metal"></div>
+                    <h3 style="margin-bottom: 20px;">OUÇA AGORA</h3>
+                    <div class="streaming-links">
+                        <a href="#" class="stream-icon" title="Spotify"><svg viewBox="0 0 496 512"><path d="M248 8C111.1 8 0 119.1 0 256s111.1 248 248 248 248-111.1 248-248S384.9 8 248 8zm113.3 350.7c-4.4 7.3-14 9.6-21.2 5.1-58.4-35.6-131.9-43.6-218.4-23.9-8.3 1.9-16.7-3.4-18.6-11.6-1.9-8.2 3.4-16.6 11.6-18.6 94.6-21.6 174.9-12.2 241.5 28.3 7.3 4.5 9.6 14 5.1 21.2zm11.7-52.4c-5.5 8.9-17.1 11.7-26.1 6.1-65.4-40.2-164.8-51.8-241.9-28.3-9.9 3-20.5-2.6-23.5-12.5-3-9.9 2.6-20.5 12.5-23.5 87.8-26.7 197.6-13 273 33.3 9 5.5 11.7 17.1 6.1 26.1zm1.2-54.2c-78.5-46.6-208.2-50.9-283.2-28.1-11.4 3.5-23.6-3-27.1-14.4-3.5-11.4 3-23.6 14.4-27.1 84.7-25.7 226.7-20.7 315.8 32.2 10.3 6.1 13.6 19.4 7.5 29.7-6.1 10.3-19.4 13.6-29.7 7.5z"/></svg></a>
+                        <a href="#" class="stream-icon" title="YouTube"><svg viewBox="0 0 576 512"><path d="M549.655 124.083c-6.281-23.65-24.787-42.276-48.284-48.597C458.781 64 288 64 288 64S117.22 64 74.629 75.486c-23.497 6.322-42.003 24.947-48.284 48.597-11.412 42.867-11.412 131.917-11.412 131.917s0 89.05 11.412 131.917c6.281 23.65 24.787 41.503 48.284 47.824C117.219 448 288 448 288 448s170.781 0 213.371-11.486c23.497-6.321 42.003-24.175 48.284-47.824 11.412-42.867 11.412-131.917 11.412-131.917s0-89.05-11.412-131.917zM232 337.687V174.313L373.143 256 232 337.687z"/></svg></a>
+                    </div>
+                </div>
+
+                <div class="paper-sheet" style="width: 100%; max-width: 600px; transform: rotate(1deg);">
+                    <div class="pin pin-tc red"></div>
+                    <h3>DISCOGRAFIA</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="border-bottom: 1px dashed #000; padding: 10px 0;">
+                            <strong>01. Astro Itapetinigano</strong> (Single, 2026)
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-gallery" class="page-section">
+            <div class="paper-sheet" style="background: #111; border: 4px solid #fff; min-height: 600px; overflow: visible;">
+                <div class="pin pin-tl metal"></div>
+                <h2 style="color: #fff; text-align: center; border-color: #fff; display: block;">ARQUIVOS MORTOS</h2>
+                
+                <div id="folders-view" class="folders-container"></div>
+
+                <div id="scatter-view" class="scatter-area">
+                    <div class="back-btn-container">
+                        <button class="back-btn" onclick="closeFolder()">← FECHAR PASTA</button>
+                    </div>
+                    <div id="scatter-floor"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-merch" class="page-section">
+            <div class="paper-sheet" style="transform: rotate(-1deg); min-height: 500px;">
+                <div class="pin pin-tc red"></div>
+                <div class="merch-coming-soon">
+                    <h2>EM BREVE</h2>
+                    <p style="font-family: 'VT323'; font-size: 1.5rem; max-width: 500px;">Estamos ocupados demais brigando no ensaio para fazer os nossos produtos. Mas logo mais voce podera gastar seu dinheiro suado em nosso merch de qualidade ;D </p>
+                    <img src="https://media1.tenor.com/m/xJVXu_8BQiMAAAAC/disperse-lesley-nielsen.gif" alt="Em Construção" class="merch-gif">
+                </div>
+            </div>
+        </div>
+
+        <div id="page-guestbook" class="page-section">
+            <div class="paper-sheet" style="max-width: 700px; margin: 0 auto; transform: rotate(1deg);">
+                <div class="pin pin-tc red"></div>
+                <h2 style="text-align: center; display: block;">DEIXE UM RECADO</h2>
+                <div style="margin: 20px 0; border: 1px dashed #000; padding: 15px; background: #f9f9f9;">
+                    <input type="text" id="g-name" placeholder="Seu nome" style="width: 100%; padding: 8px; margin-bottom: 10px; font-family: 'Special Elite';">
+                    <textarea id="g-msg" placeholder="Escreva algo meo..." style="width: 100%; height: 80px; padding: 8px; font-family: 'Special Elite';"></textarea>
+                    <button onclick="addComment()" style="background: #000; color: #fff; border: none; padding: 10px 20px; font-family: 'Permanent Marker'; cursor: pointer; margin-top: 10px;">ENVIAR</button>
+                </div>
+                <div id="comments-list"></div>
+            </div>
+        </div>
+
+        <footer>
+            <p>DESIGNED IN HELL // © 2026</p>
+        </footer>
+    </div>
+
+    <script>
+        const galleryFolders = {
+            "ensaio18": {
+                title: "Ensaio Dia 18",
+                photos: [
+                    { src: "fotosensaio/foto1.jpeg", label: "#01" },
+                    { src: "fotosensaio/foto2.jpeg", label: "#02" },
+                    { src: "fotosensaio/foto3.jpeg", label: "#03" },
+                    { src: "fotosensaio/foto4.jpeg", label: "#04" },
+                    { src: "fotosensaio/foto5.jpeg", label: "#05" }
+                ]
+            },
+            "bastidores": {
+                title: "Bastidores",
+                photos: [
+                    { src: "fotosensaio/foto6.jpeg", label: "#06" },
+                    { src: "fotosensaio/foto7.jpeg", label: "#07" },
+                    { src: "fotosensaio/foto8.jpeg", label: "#08" },
+                    { src: "fotosensaio/foto9.jpeg", label: "#09" }
+                ]
+            }
+        };
+
+        let currentActiveFolder = null;
+
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                var loader = document.getElementById('loader');
+                if(loader) {
+                    loader.classList.add('hidden');
+                    setTimeout(() => { loader.style.display = 'none'; }, 800);
+                }
+            }, 800);
+            renderFolders();
+        });
+
+        window.addEventListener('resize', function() {
+            if (currentActiveFolder) {
+                calculatePositions(currentActiveFolder);
+            }
+        });
+
+        function renderFolders() {
+            const container = document.getElementById('folders-view');
+            if(!container) return;
+            container.innerHTML = '';
+            for (const key in galleryFolders) {
+                const folder = galleryFolders[key];
+                const div = document.createElement('div');
+                div.className = 'folder-item';
+                div.onclick = () => openFolder(key);
+                div.innerHTML = `<div class="folder-label">${folder.title}</div>`;
+                container.appendChild(div);
+            }
+        }
+
+        function openFolder(key) {
+            currentActiveFolder = key;
+            const foldersView = document.getElementById('folders-view');
+            const scatterView = document.getElementById('scatter-view');
+            const floor = document.getElementById('scatter-floor');
+            
+            if(!foldersView || !scatterView || !floor) return;
+
+            foldersView.style.display = 'none';
+            scatterView.classList.add('visible');
+            floor.innerHTML = ''; 
+
+            const photos = galleryFolders[key].photos;
+            
+            photos.forEach((photo, index) => {
+                const pDiv = document.createElement('div');
+                pDiv.className = 'scatter-photo';
+                pDiv.innerHTML = `
+                    <img src="${photo.src}" alt="${photo.label}">
+                    <span>${photo.label}</span>
+                `;
+                pDiv.onclick = () => openLightbox(pDiv);
+                
+                pDiv.style.left = `50%`;
+                pDiv.style.top = `0%`;
+                pDiv.style.transform = `translate(-50%, -50%) scale(0.1)`;
+                
+                floor.appendChild(pDiv);
+            });
+
+            setTimeout(() => calculatePositions(key, true), 50);
+        }
+
+        function calculatePositions(key, animate = false) {
+            const floor = document.getElementById('scatter-floor');
+            const scatterView = document.getElementById('scatter-view');
+            const photosElements = floor.querySelectorAll('.scatter-photo');
+            const photosData = galleryFolders[key].photos;
+            const floorWidth = floor.offsetWidth;
+            const isMobile = window.innerWidth <= 800;
+            
+            const photoW = isMobile ? (window.innerWidth <= 500 ? 130 : 150) : 200;
+            const photoH = isMobile ? (window.innerWidth <= 500 ? 110 : 140) : 180;
+            
+            const cols = Math.max(2, Math.floor(floorWidth / (photoW + 30)));
+            const rows = Math.ceil(photosData.length / cols);
+            
+            // Altura calculada com padding extra para não cortar
+            const totalHeight = (rows * (photoH + 100)) + 150;
+            scatterView.style.height = `${totalHeight}px`;
+
+            photosElements.forEach((pDiv, index) => {
+                const col = index % cols;
+                const row = Math.floor(index / cols);
+                
+                const colWidth = floorWidth / cols;
+                const gridX = (col * colWidth) + (colWidth / 2);
+                const gridY = (row * (photoH + 110)) + (photoH / 2) + 60;
+
+                const jitterRange = isMobile ? 10 : 35;
+                const jitterX = (Math.sin(index * 2) * jitterRange); 
+                const jitterY = (Math.cos(index * 2) * jitterRange);
+                const randRot = (Math.sin(index) * 12);
+
+                const finalX = gridX + jitterX;
+                const finalY = gridY + jitterY;
+
+                if (animate) {
+                    setTimeout(() => {
+                        pDiv.classList.add('landed');
+                        pDiv.style.left = `${finalX}px`;
+                        pDiv.style.top = `${finalY}px`;
+                        pDiv.style.transform = `translate(-50%, -50%) rotate(${randRot}deg) scale(1)`;
+                    }, index * 50);
+                } else {
+                    pDiv.classList.add('landed');
+                    pDiv.style.left = `${finalX}px`;
+                    pDiv.style.top = `${finalY}px`;
+                    pDiv.style.transform = `translate(-50%, -50%) rotate(${randRot}deg) scale(1)`;
+                }
+            });
+        }
+
+        function closeFolder() {
+            currentActiveFolder = null;
+            const scatterView = document.getElementById('scatter-view');
+            const foldersView = document.getElementById('folders-view');
+            if(scatterView) {
+                scatterView.classList.remove('visible');
+                scatterView.style.height = '0px';
+            }
+            if(foldersView) foldersView.style.display = 'flex';
+            const floor = document.getElementById('scatter-floor');
+            if(floor) floor.innerHTML = '';
+        }
+
+        function openLightbox(element) {
+            const img = element.querySelector('img').src;
+            const caption = element.querySelector('span').innerText;
+            document.getElementById('lb-img').src = img;
+            document.getElementById('lb-caption').innerText = caption;
+            document.getElementById('lightbox').classList.add('active');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            
+            const targetPage = document.getElementById('page-' + pageId);
+            if(targetPage) targetPage.classList.add('active');
+            
+            const btns = document.querySelectorAll('.nav-btn');
+            btns.forEach(btn => {
+                if (btn.getAttribute('onclick').includes(`'${pageId}'`)) {
+                    btn.classList.add('active');
+                }
+            });
+
+            if (pageId !== 'gallery') closeFolder();
+        }
+
+        // API URL - will work both locally and when deployed to Vercel
+        const API_URL = '/api/comments';
+
+        // Load comments when the guestbook page is shown
+        async function loadComments() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const comments = await response.json();
+                displayComments(comments);
+            } catch (error) {
+                console.error('Error loading comments:', error);
+                document.getElementById('comments-list').innerHTML = 
+                    '<div style="color: #8b0000; text-align: center; padding: 20px;">Erro ao carregar recados. Por favor, tente novamente mais tarde.</div>';
+            }
+        }
+
+        // Display comments in the DOM
+        function displayComments(comments) {
+            const container = document.getElementById('comments-list');
+            container.innerHTML = '';
+            
+            if (comments.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #666; padding: 20px; font-style: italic;">Nenhum recado ainda. Seja o primeiro a deixar um!</div>';
+                return;
+            }
+
+            comments.forEach(comment => {
+                const div = document.createElement('div');
+                div.style.cssText = 'background: #eee; padding: 15px; margin-bottom: 15px; border: 1px solid #ccc; font-family: "Special Elite"; border-radius: 4px;';
+                
+                // Format date
+                const date = new Date(comment.createdAt);
+                const formattedDate = date.toLocaleDateString('pt-BR', { 
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <strong style="color: #8b0000;">${escapeHtml(comment.name)} diz:</strong>
+                        <span style="font-size: 0.8rem; color: #666;">${formattedDate}</span>
+                    </div>
+                    <div style="line-height: 1.4;">${escapeHtml(comment.message)}</div>
+                    <hr style="border: none; border-top: 1px dashed #ccc; margin: 10px 0;">
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Escape HTML to prevent XSS attacks
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Add a new comment
+        async function addComment() {
+            const nameInput = document.getElementById('g-name');
+            const msgInput = document.getElementById('g-msg');
+            const name = nameInput.value;
+            const msg = msgInput.value;
+
+            if (!name.trim() || !msg.trim()) {
+                alert('Por favor, preencha ambos os campos.');
+                return;
+            }
+
+            if (name.trim().length < 2) {
+                alert('O nome deve ter pelo menos 2 caracteres.');
+                return;
+            }
+
+            if (msg.trim().length < 5) {
+                alert('A mensagem deve ter pelo menos 5 caracteres.');
+                return;
+            }
+
+            try {
+                // Show loading state
+                const submitBtn = event.target;
+                const originalText = submitBtn.innerText;
+                submitBtn.innerText = 'ENVIANDO...';
+                submitBtn.disabled = true;
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name.trim(),
+                        message: msg.trim()
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Erro ao enviar recado');
+                }
+
+                const newComment = await response.json();
+                
+                // Clear form
+                nameInput.value = '';
+                msgInput.value = '';
+                
+                // Reload comments to show the new one at the top
+                await loadComments();
+                
+                alert('Recado enviado com sucesso!');
+                
+            } catch (error) {
+                console.error('Error adding comment:', error);
+                alert('Erro ao enviar recado. Por favor, tente novamente.');
+            } finally {
+                // Reset button state
+                const submitBtn = event.target;
+                submitBtn.innerText = 'ENVIAR';
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Override the showPage function to load comments when guestbook is shown
+        const originalShowPage = window.showPage;
+        window.showPage = function(pageId) {
+            if (originalShowPage) originalShowPage(pageId);
+            
+            // Load comments when guestbook page is shown
+            if (pageId === 'guestbook') {
+                loadComments();
+            }
+        };
+
+        // Load comments when the page first loads if guestbook is active
+        document.addEventListener('DOMContentLoaded', function() {
+            const guestbookPage = document.getElementById('page-guestbook');
+            if (guestbookPage && guestbookPage.classList.contains('active')) {
+                loadComments();
+            }
+        });
+    </script>
+</body>
+</html>
