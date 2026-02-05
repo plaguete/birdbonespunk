@@ -13,8 +13,12 @@
       "dest": "/api/comments.js"
     },
     {
+      "src": "/public/(.*)",
+      "dest": "/public/$1"
+    },
+    {
       "src": "/(.*\\.(?:png|jpg|jpeg|gif|svg|css|js|woff|woff2|eot|ttf|webp|webmanifest|json))",
-      "dest": "/api/static.js"
+      "dest": "/public/$1"
     },
     {
       "src": "/(.*)",
