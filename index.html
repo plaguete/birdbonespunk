@@ -129,21 +129,21 @@
         .polaroid-container { 
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
-            gap: 20px; 
+            gap: 15px; 
             justify-items: center;
             margin-top: 20px; 
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+            width: 100%;
+            padding: 0 10px;
+            box-sizing: border-box;
         }
         .polaroid {
-            background: #fff; padding: 12px 12px 40px 12px;
+            background: #fff; padding: 10px 10px 35px 10px;
             box-shadow: 4px 4px 6px rgba(0,0,0,0.4); transform: rotate(var(--rot));
-            text-align: center; width: 160px; position: relative;
+            text-align: center; width: 100%; max-width: 160px; position: relative;
         }
-        .polaroid img { width: 100%; height: 140px; object-fit: cover; filter: grayscale(100%) contrast(120%); border: 1px solid #ccc; }
-        .polaroid span { font-family: 'Permanent Marker'; font-size: 1.2rem; display: block; margin-top: 15px; color: #000; line-height: 1; }
-        .polaroid small { font-family: 'VT323'; font-size: 1.1rem; color: #555; display: block; margin-top: 5px; }
+        .polaroid img { width: 100%; height: 120px; object-fit: cover; filter: grayscale(100%) contrast(120%); border: 1px solid #ccc; }
+        .polaroid span { font-family: 'Permanent Marker'; font-size: 1rem; display: block; margin-top: 10px; color: #000; line-height: 1; }
+        .polaroid small { font-family: 'VT323'; font-size: 0.9rem; color: #555; display: block; margin-top: 3px; }
 
         /* --- GALERIA --- */
         .folders-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; padding: 40px 20px; }
@@ -296,10 +296,9 @@
         footer { text-align: center; margin-top: 50px; font-family: 'VT323'; font-size: 1.2rem; padding: 10px; }
 
         /* --- RESPONSIVIDADE --- */
-        @media (max-width: 1000px) {
+        @media (max-width: 900px) {
             .polaroid-container { 
                 grid-template-columns: repeat(2, 1fr);
-                max-width: 400px;
             }
         }
         @media (max-width: 800px) {
@@ -312,10 +311,18 @@
             
             .polaroid-container { 
                 grid-template-columns: repeat(2, 1fr);
-                max-width: 380px;
+                gap: 12px;
             }
             .polaroid {
-                width: 150px;
+                padding: 8px 8px 30px 8px;
+                max-width: 140px;
+            }
+            .polaroid img { 
+                height: 100px; 
+            }
+            .polaroid span {
+                font-size: 0.9rem;
+                margin-top: 8px;
             }
             
             .scatter-photo { 
@@ -333,21 +340,34 @@
         @media (max-width: 600px) {
             .polaroid-container { 
                 grid-template-columns: 1fr;
-                max-width: 200px;
+                gap: 10px;
             }
             .polaroid {
-                width: 140px;
+                padding: 8px 8px 30px 8px;
+                max-width: 130px;
+            }
+            .polaroid img { 
+                height: 90px; 
             }
         }
-        @media (max-width: 500px) {
-            .nav-btn { width: 45%; font-size: 1rem; }
+        @media (max-width: 480px) {
+            .nav-btn { width: 45%; font-size: 0.9rem; padding: 8px 12px; }
             .stream-icon svg { width: 35px; height: 35px; }
             .polaroid-container { 
                 grid-template-columns: 1fr;
-                max-width: 160px;
+                gap: 8px;
+                padding: 0 5px;
             }
             .polaroid {
-                width: 130px;
+                padding: 8px 8px 28px 8px;
+                max-width: 120px;
+            }
+            .polaroid img { 
+                height: 80px; 
+            }
+            .polaroid span {
+                font-size: 0.8rem;
+                margin-top: 6px;
             }
             .scatter-photo { width: 130px; }
             .scatter-photo img { height: 100px; }
