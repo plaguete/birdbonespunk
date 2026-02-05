@@ -126,7 +126,16 @@
         .page-section.active { display: block; }
         @keyframes popIn { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-        .polaroid-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 20px; }
+        .polaroid-container { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 20px; 
+            justify-items: center;
+            margin-top: 20px; 
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
         .polaroid {
             background: #fff; padding: 12px 12px 40px 12px;
             box-shadow: 4px 4px 6px rgba(0,0,0,0.4); transform: rotate(var(--rot));
@@ -287,6 +296,12 @@
         footer { text-align: center; margin-top: 50px; font-family: 'VT323'; font-size: 1.2rem; padding: 10px; }
 
         /* --- RESPONSIVIDADE --- */
+        @media (max-width: 1000px) {
+            .polaroid-container { 
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 400px;
+            }
+        }
         @media (max-width: 800px) {
             .grid-layout { grid-template-columns: 1fr; }
             .bulletin-board { padding: 15px; border-width: 15px; } 
@@ -294,6 +309,14 @@
             .sidebar-profile { flex-direction: row; flex-wrap: wrap; justify-content: center;}
             .profile-pic-container { width: 180px; }
             .merch-coming-soon h2 { font-size: 2.5rem; }
+            
+            .polaroid-container { 
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 380px;
+            }
+            .polaroid {
+                width: 150px;
+            }
             
             .scatter-photo { 
                 width: 150px; 
@@ -307,9 +330,25 @@
                 margin-top: 5px;
             }
         }
+        @media (max-width: 600px) {
+            .polaroid-container { 
+                grid-template-columns: 1fr;
+                max-width: 200px;
+            }
+            .polaroid {
+                width: 140px;
+            }
+        }
         @media (max-width: 500px) {
             .nav-btn { width: 45%; font-size: 1rem; }
             .stream-icon svg { width: 35px; height: 35px; }
+            .polaroid-container { 
+                grid-template-columns: 1fr;
+                max-width: 160px;
+            }
+            .polaroid {
+                width: 130px;
+            }
             .scatter-photo { width: 130px; }
             .scatter-photo img { height: 100px; }
         }
