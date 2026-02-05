@@ -2,6 +2,7 @@
   "name": "bird-bones-website",
   "version": "1.0.0",
   "description": "Website oficial da banda Bird Bones",
+  "type": "module",
   "main": "index.html",
   "scripts": {
     "dev": "echo 'Development server not needed for static site'",
