@@ -33,6 +33,13 @@ export default async function handler(req, res) {
     }
 
     try {
+        // Check if DATABASE_URL is configured
+        if (!process.env.DATABASE_URL) {
+            return res.status(503).json({ 
+                error: 'Database not configured. Please set DATABASE_URL in Vercel Environment Variables.' 
+            });
+        }
+
         // Ensure table exists (safe to run on each request)
         await getPool().query(`
             CREATE TABLE IF NOT EXISTS comments (
@@ -95,6 +102,14 @@ export default async function handler(req, res) {
         }
     } catch (error) {
         console.error('API Error:', error);
+        
+        // Check if it's a connection error (DATABASE_URL not accessible)
+        if (error.code === 'ECONNREFUSED' || error.message?.includes('ECONNREFUSED')) {
+            return res.status(503).json({ 
+                error: 'Database connection failed. Please verify DATABASE_URL is correct and Vercel Postgres is active.' 
+            });
+        }
+        
         res.status(500).json({ error: 'Internal Server Error' });
     }
 }
